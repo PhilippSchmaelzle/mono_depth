@@ -25,21 +25,19 @@ set -x
 #pip install -r depth_and_motion_learning/requirements.txt
 
 
-
-
 #"data_path": "depth_from_video_in_the_wild/data_example/train.txt"
 
 python3.7 -m depth_and_motion_learning.depth_motion_field_train \
-  --model_dir=/home/fascar/Documents/mono_depth_training/models/backup_cityscape_416x128 \
+  --model_dir=/home/fascar/Documents/mono_depth/models/cityscape_plus_avt \
   --param_overrides='{
     "model": {
       "input": {
-        "data_path": "/media/fascar/schmaelle/datasets/kofif/sequence_preprocessed/train/train.txt"
+        "data_path": "/home/fascar/Documents/mono_depth/data/test.txt"
       }
     },
     "trainer": {
       "init_ckpt": "/home/fascar/Documents/mono_depth_training/models/resnet18_ckpt_from_torch/model.ckpt",
       "init_ckpt_type": "imagenet",
-      "max_steps": 125000
+      "max_steps": 125001
     }
   }'

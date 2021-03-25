@@ -25,12 +25,31 @@ from absl import app
 from depth_and_motion_learning import depth_motion_field_model
 from depth_and_motion_learning import training_utils
 
+import cv2
+import numpy as np
+import tensorflow as tf
+
 
 def main(argv):
   if len(argv) > 1:
     raise app.UsageError('Too many command-line arguments.')
 
-  training_utils.train(depth_motion_field_model.input_fn,
+
+  image_file = "/home/fascar/Documents/mono_depth/data/2020-10-22-10-29-48_7_36.png"
+  input_image = cv2.imread(image_file).astype(np.float32)
+  input_image = input_image #* (1 / 255.0)
+
+  encoded_image = tf.io.read_file(image_file)
+  decoded_image = tf.image.decode_png(encoded_image, channels=3)
+  decoded_image = tf.to_float(decoded_image) * (1 / 255.0)
+
+  print("loooooooooooooooooooooooooooool")
+  print(input_image)
+  input_batch = np.reshape(input_image, (1, 128, 416, 3))
+  cv2.imshow("input", np.reshape(input_batch, (128,416,3)))
+  cv2.waitKey(3)
+
+  training_utils.infer(depth_motion_field_model.input_fn_infer(input_image=input_batch),
                        depth_motion_field_model.loss_fn,
                        depth_motion_field_model.get_vars_to_restore_fn)
 
