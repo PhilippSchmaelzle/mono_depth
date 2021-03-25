@@ -42,13 +42,12 @@ from tensorflow.contrib import estimator as contrib_estimator
 
 FLAGS = flags.FLAGS
 
-
 flags.DEFINE_string('master', '', 'TensorFlow session address.')
 
 flags.DEFINE_string('model_dir', '', 'Directory where the model is saved.')
 
 flags.DEFINE_string('param_overrides', '', 'Parameters for the trainer and the '
-                    'model')
+                                           'model')
 
 # Defaults for various parameters common to training configurations.
 
@@ -86,7 +85,7 @@ TRAINER_PARAMS = {
 
 
 class InitFromCheckpointHook(tf.estimator.SessionRunHook):
-  """A hook for initializing training from a checkpoint.
+    """A hook for initializing training from a checkpoint.
 
   Although the Estimator framework supports initialization from a checkpoint via
   https://www.tensorflow.org/api_docs/python/tf/estimator/WarmStartSettings,
@@ -96,8 +95,8 @@ class InitFromCheckpointHook(tf.estimator.SessionRunHook):
   readability.
   """
 
-  def __init__(self, model_dir, ckpt_to_init_from, vars_to_restore_fn=None):
-    """Creates an instance.
+    def __init__(self, model_dir, ckpt_to_init_from, vars_to_restore_fn=None):
+        """Creates an instance.
 
     Args:
       model_dir: A string, path where checkpoints are saved during training.
@@ -111,46 +110,46 @@ class InitFromCheckpointHook(tf.estimator.SessionRunHook):
         as `var_list` in a Saver object used for initializing from
         `ckpt_to_init_from`. If None, the default saver will be used.
     """
-    self._ckpt = None if tf.train.latest_checkpoint(
-        model_dir) else ckpt_to_init_from
-    self._vars_to_restore_fn = vars_to_restore_fn
+        self._ckpt = None if tf.train.latest_checkpoint(
+            model_dir) else ckpt_to_init_from
+        self._vars_to_restore_fn = vars_to_restore_fn
 
-  def begin(self):
-    if not self._ckpt:
-      return
-    logging.info('%s will be used for initialization.', self._ckpt)
-    # Build a saver object for initializing from a checkpoint, or use the
-    # default one if no vars_to_restore_fn was given.
-    self._reset_step = None
-    if tf.train.get_global_step() is not None:
-      self._reset_step = tf.train.get_global_step().assign(0)
-    if not self._vars_to_restore_fn:
-      logging.info('All variables will be initialized form the checkpoint.')
-      self._saver = tf.get_collection(tf.GraphKeys.SAVERS)[0]
-      return
+    def begin(self):
+        if not self._ckpt:
+            return
+        logging.info('%s will be used for initialization.', self._ckpt)
+        # Build a saver object for initializing from a checkpoint, or use the
+        # default one if no vars_to_restore_fn was given.
+        self._reset_step = None
+        if tf.train.get_global_step() is not None:
+            self._reset_step = tf.train.get_global_step().assign(0)
+        if not self._vars_to_restore_fn:
+            logging.info('All variables will be initialized form the checkpoint.')
+            self._saver = tf.get_collection(tf.GraphKeys.SAVERS)[0]
+            return
 
-    vars_to_restore = self._vars_to_restore_fn()
-    restored_vars_string = (
-        'The following variables are to be initialized from the checkpoint:\n')
-    for ckpt_name in sorted(vars_to_restore):
-      restored_vars_string += '%s --> %s\n' % (
-          ckpt_name, vars_to_restore[ckpt_name].op.name)
+        vars_to_restore = self._vars_to_restore_fn()
+        restored_vars_string = (
+            'The following variables are to be initialized from the checkpoint:\n')
+        for ckpt_name in sorted(vars_to_restore):
+            restored_vars_string += '%s --> %s\n' % (
+                ckpt_name, vars_to_restore[ckpt_name].op.name)
 
-    logging.info(restored_vars_string)
-    self._saver = tf.train.Saver(vars_to_restore)
+        logging.info(restored_vars_string)
+        self._saver = tf.train.Saver(vars_to_restore)
 
-  def after_create_session(self, session, coord):
-    del coord  # unused
-    if not self._ckpt:
-      return
-    self._saver.restore(session, self._ckpt)
-    self._saver.restore(session, self._ckpt)
-    if self._reset_step is not None:
-      session.run(self._reset_step)
+    def after_create_session(self, session, coord):
+        del coord  # unused
+        if not self._ckpt:
+            return
+        self._saver.restore(session, self._ckpt)
+        self._saver.restore(session, self._ckpt)
+        if self._reset_step is not None:
+            session.run(self._reset_step)
 
 
 def _build_estimator_spec(losses, trainer_params, mode, use_tpu=False):
-  """Builds an EstimatorSpec/TPUEstimatorSpec based on trainer_params.
+    """Builds an EstimatorSpec/TPUEstimatorSpec based on trainer_params.
 
   Args:
     losses: A dictionary of {string: tf.Tensor} containing the various losses.
@@ -165,36 +164,36 @@ def _build_estimator_spec(losses, trainer_params, mode, use_tpu=False):
   Returns:
     A EstimatorSpec or a TPUEstimatorSpec object.
   """
-  if mode == tf.estimator.ModeKeys.TRAIN:
-    total_loss = 0.0
-    for loss_name, loss in six.iteritems(losses):
-      if not use_tpu:
-        tf.summary.scalar('Loss/%s' % loss_name, loss)
-      total_loss += loss
+    if mode == tf.estimator.ModeKeys.TRAIN:
+        total_loss = 0.0
+        for loss_name, loss in six.iteritems(losses):
+            if not use_tpu:
+                tf.summary.scalar('Loss/%s' % loss_name, loss)
+            total_loss += loss
 
-    learning_rate = trainer_params.learning_rate
-    maybe_summary.scalar('Learning Rate', learning_rate)
-    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate, beta1=0.9)
-    optimizer = contrib_estimator.clip_gradients_by_norm(
-        optimizer, trainer_params.clip_gradients)
+        learning_rate = trainer_params.learning_rate
+        maybe_summary.scalar('Learning Rate', learning_rate)
+        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate, beta1=0.9)
+        optimizer = contrib_estimator.clip_gradients_by_norm(
+            optimizer, trainer_params.clip_gradients)
+
+        if use_tpu:
+            optimizer = tf.tpu.CrossShardOptimizer(optimizer)
+
+        train_op = optimizer.minimize(
+            total_loss, global_step=tf.train.get_global_step())
+    else:
+        total_loss = None
+        train_op = None
 
     if use_tpu:
-      optimizer = tf.tpu.CrossShardOptimizer(optimizer)
+        estimator_spec = tf.estimator.tpu.TPUEstimatorSpec(
+            mode=tf.estimator.ModeKeys.TRAIN, loss=total_loss, train_op=train_op)
+    else:
+        estimator_spec = tf.estimator.EstimatorSpec(
+            mode=tf.estimator.ModeKeys.TRAIN, loss=total_loss, train_op=train_op)
 
-    train_op = optimizer.minimize(
-        total_loss, global_step=tf.train.get_global_step())
-  else:
-    total_loss = None
-    train_op = None
-
-  if use_tpu:
-    estimator_spec = tf.estimator.tpu.TPUEstimatorSpec(
-        mode=tf.estimator.ModeKeys.TRAIN, loss=total_loss, train_op=train_op)
-  else:
-    estimator_spec = tf.estimator.EstimatorSpec(
-        mode=tf.estimator.ModeKeys.PREDICT, loss=total_loss, train_op=train_op)
-
-  return estimator_spec
+    return estimator_spec
 
 
 def run_local_training(losses_fn,
@@ -202,7 +201,7 @@ def run_local_training(losses_fn,
                        trainer_params_overrides,
                        model_params,
                        vars_to_restore_fn=None):
-  """Run a simple single-mechine traing loop.
+    """Run a simple single-mechine traing loop.
 
   Args:
     losses_fn: A callable that receives two arguments, `features` and `params`,
@@ -220,47 +219,49 @@ def run_local_training(losses_fn,
       as `var_list` in a Saver object used for initializing from the checkpoint
       at trainer_params.init_ckpt. If None, the default saver will be used.
   """
-  trainer_params = ParameterContainer.from_defaults_and_overrides(
-      TRAINER_PARAMS, trainer_params_overrides, is_strict=True)
+    trainer_params = ParameterContainer.from_defaults_and_overrides(
+        TRAINER_PARAMS, trainer_params_overrides, is_strict=True)
 
-  run_config_params = {
-      'model_dir':
-          trainer_params.model_dir,
-      'save_summary_steps':
-          5,
-      'keep_checkpoint_every_n_hours':
-          trainer_params.keep_checkpoint_every_n_hours,
-      'log_step_count_steps':
-          25,
-  }
-  logging.info(
-      'Estimators run config parameters:\n%s',
-      json.dumps(run_config_params, indent=2, sort_keys=True, default=str))
-  run_config = tf.estimator.RunConfig(**run_config_params)
+    run_config_params = {
+        'model_dir':
+            trainer_params.model_dir,
+        'save_summary_steps':
+            5,
+        'keep_checkpoint_every_n_hours':
+            trainer_params.keep_checkpoint_every_n_hours,
+        'log_step_count_steps':
+            25,
+    }
+    logging.info(
+        'Estimators run config parameters:\n%s',
+        json.dumps(run_config_params, indent=2, sort_keys=True, default=str))
+    run_config = tf.estimator.RunConfig(**run_config_params)
 
-  def estimator_spec_fn(features, labels, mode, params):
-    del labels  # unused
-    return _build_estimator_spec(
-        losses_fn(features, mode, params),
-        trainer_params=trainer_params,
-        mode=mode,
-        use_tpu=False)
 
-  init_hook = InitFromCheckpointHook(trainer_params.model_dir,
-                                     trainer_params.init_ckpt,
-                                     vars_to_restore_fn)
+    def estimator_spec_fn(features, labels, mode, params):
+        print("\n\n\n\n MODE: " + mode + "\n\n\n\n\n")
+        del labels  # unused
+        return _build_estimator_spec(
+            losses_fn(features, mode, params),
+            trainer_params=trainer_params,
+            mode=mode,
+            use_tpu=False)
 
-  estimator = tf.estimator.Estimator(
-      model_fn=estimator_spec_fn,
-      config=run_config,
-      params=model_params.as_dict())
+    init_hook = InitFromCheckpointHook(trainer_params.model_dir,
+                                       trainer_params.init_ckpt,
+                                       vars_to_restore_fn)
 
-  estimator.train(
-      input_fn=input_fn, max_steps=trainer_params.max_steps, hooks=[init_hook])
+    estimator = tf.estimator.Estimator(
+        model_fn=estimator_spec_fn,
+        config=run_config,
+        params=model_params.as_dict())
+
+    estimator.train(
+        input_fn=input_fn, max_steps=trainer_params.max_steps, hooks=[init_hook])
 
 
 def train(input_fn, loss_fn, get_vars_to_restore_fn=None):
-  """Run training.
+    """Run training.
 
   Args:
     input_fn: A tf.Estimator compliant input_fn.
@@ -277,32 +278,31 @@ def train(input_fn, loss_fn, get_vars_to_restore_fn=None):
       a `var_list` to indicate which variables to load from what names in the
       checnpoint.
   """
-  params = ParameterContainer({
-      'model': {
-          'batch_size': 16,
-          'input': {}
-      },
-  }, {'trainer': {
-      'master': FLAGS.master,
-      'model_dir': FLAGS.model_dir
-  }})
+    params = ParameterContainer({
+        'model': {
+            'batch_size': 16,
+            'input': {}
+        },
+    }, {'trainer': {
+        'master': FLAGS.master,
+        'model_dir': FLAGS.model_dir
+    }})
 
-  params.override(FLAGS.param_overrides)
+    params.override(FLAGS.param_overrides)
 
-  init_ckpt_type = params.trainer.get('init_ckpt_type')
+    init_ckpt_type = params.trainer.get('init_ckpt_type')
 
-  if init_ckpt_type and not get_vars_to_restore_fn:
-    raise ValueError(
-        'An init_ckpt_type was specified (%s), but no get_vars_to_restore_fn '
-        'was provided.' % init_ckpt_type)
+    if init_ckpt_type and not get_vars_to_restore_fn:
+        raise ValueError(
+            'An init_ckpt_type was specified (%s), but no get_vars_to_restore_fn '
+            'was provided.' % init_ckpt_type)
 
-  vars_to_restore_fn = (
-      get_vars_to_restore_fn(init_ckpt_type) if init_ckpt_type else None)
+    vars_to_restore_fn = (
+        get_vars_to_restore_fn(init_ckpt_type) if init_ckpt_type else None)
 
-  logging.info(
-      'Starting training with the following parameters:\n%s',
-      json.dumps(params.as_dict(), indent=2, sort_keys=True, default=str))
+    logging.info(
+        'Starting training with the following parameters:\n%s',
+        json.dumps(params.as_dict(), indent=2, sort_keys=True, default=str))
 
-  run_local_training(loss_fn, input_fn, params.trainer, params.model,
-                     vars_to_restore_fn)
-
+    run_local_training(loss_fn, input_fn, params.trainer, params.model,
+                       vars_to_restore_fn)
