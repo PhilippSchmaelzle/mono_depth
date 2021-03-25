@@ -2,3 +2,6 @@ __pycache__/
 bin/
 dataset/
 lib/
+data/
+models/
+venv/
