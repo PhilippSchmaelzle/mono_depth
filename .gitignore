@@ -1,7 +1,3 @@
-__pycache__/
-bin/
-dataset/
-lib/
-data/
 models/
+data/
 venv/

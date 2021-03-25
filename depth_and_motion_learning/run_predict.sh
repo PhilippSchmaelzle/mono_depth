@@ -27,12 +27,12 @@ set -x
 
 #"data_path": "depth_from_video_in_the_wild/data_example/train.txt"
 
-python3.7 -m depth_and_motion_learning.depth_motion_field_train \
-  --model_dir=/home/fascar/Documents/mono_depth_training/models/inference_test \
+python3.7 -m mono_depth.depth_motion_field_train \
+  --model_dir=/home/fascar/Documents/mono_depth/models/cityscape_plus_avt \
   --param_overrides='{
     "model": {
       "input": {
-        "data_path": "/media/fascar/schmaelle/datasets/kofif/sequence_preprocessed/test/test.txt"
+        "data_path": "/home/fascar/Documents/mono_depth/data/test.txt"
       }
     },
     "trainer": {
