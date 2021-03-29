@@ -245,7 +245,7 @@ def run_local_inference(input_fn,
     print("\nOUT run_local_inference")
 
     print("\n\nPRE EXPORT MODEL")
-    estimator.export_savedmodel("/home/fascar/Documents/mono_depth/models", serving_input_receiver_fn=serving_input_receiver_fn)
+    estimator.export_savedmodel("/home/fascar/Documents/mono_depth/models/models_serv", serving_input_receiver_fn=serving_input_receiver_fn)
     print("\n\nPOST EXPORT MODEL")
 
 

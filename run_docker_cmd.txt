@@ -1,0 +1,2 @@
+sudo docker run -p 8500:8500 --mount type=bind,source=/home/fascar/Documents/mono_depth/models/models_serv,target=/models/models_serv -e MODEL_NAME=models_serv -t tensorflow/serving &
+
