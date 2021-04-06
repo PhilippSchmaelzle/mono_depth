@@ -226,7 +226,10 @@ def run_local_inference(input_fn,
 
     print("\n\nPRE estimator.predict")
     predict_output = estimator.predict(input_fn=input_fn, predict_keys=None, hooks=[init_hook])
-    predict_output_np = np.array(list(predict_output))
+    predict_output = np.array(list(predict_output))
+
+    # Reduce dimension => remove batch and last channel because it is grayscale
+    predict_output_np = predict_output[0,:,:,0]
     
     hist, bins = np.histogram(predict_output_np, bins=range(0,255))
     import matplotlib.pyplot as plt

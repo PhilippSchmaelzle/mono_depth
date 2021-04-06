@@ -31,7 +31,7 @@ with grpc.insecure_channel("localhost:8500") as channel:
 # Dummy input data for batch size 3.
 
 image_file = "/home/fascar/Documents/mono_depth/data/2020-10-22-10-29-48_7_36.png"
-image_file = "/home/fascar/Documents/mono_depth/data/depth_value_eval/2020-10-21-15-42-20_11_1.png"
+image_file = "/home/fascar/Documents/mono_depth/data/depth_value_eval/snow_13-45-17_8-11_sec11-8.png"
 input_image = cv2.imread(image_file).astype(np.float32)
 batch_input = np.array(input_image, dtype='float32')
 batch_input = batch_input * 1/255
@@ -47,7 +47,7 @@ with grpc.insecure_channel("localhost:8500") as channel:
 
     
   start_time =  time.time()
-  NUMBER_RUNS = 1000
+  NUMBER_RUNS = 1
   for i in range(NUMBER_RUNS):
     response = stub.Predict(request)
     batch_output = tf.make_ndarray(response.outputs["depth_prediction_output"])
@@ -59,5 +59,5 @@ print("FPS: " + str(fps))
 img = np.reshape(batch_output, (128,416,1))
 #img = img * (255/np.max(img))
 img = img * 10
-cv2.imwrite("/home/fascar/Documents/mono_depth/data/depth_value_eval/2020-10-21-15-42-20_11_1_depth_scale10_norm.png", img)
+cv2.imwrite("/home/fascar/Documents/mono_depth/data/depth_value_eval/snow_13-45-17_8-11_sec11-8_scale10_norm.png", img)
 print (batch_output.shape)
