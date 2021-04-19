@@ -1,2 +1,9 @@
 sudo docker run -p 8500:8500 --mount type=bind,source=/home/fascar/Documents/mono_depth/models/models_serv,target=/models/models_serv -e MODEL_NAME=models_serv -t tensorflow/serving &
 
+
+
+sudo docker run -p 1500:1500 --mount type=bind,source=/home/fascar/Documents/mono_depth_inference/models_serv,target=/models/models_serv -e MODEL_NAME=models_serv -t tensorflow/serving:2.2.0 &
+
+sudo docker run -p 8500:8500 --mount type=bind,source=/home/fascar/Documents/nn_models/pretrained_obj_det/models2serv,target=/models/models2serv -e MODEL_NAME=models2serv -t tensorflow/serving:2.2.0 &
+
+
