@@ -28,7 +28,7 @@ set -x
 #"data_path": "depth_from_video_in_the_wild/data_example/train.txt"
 
 python3.7 -m depth_and_motion_learning.infer_all_func_in_one \
-  --model_dir=/home/fascar/Documents/mono_depth/models/cityscape_plus_avt \
+  --model_dir=/home/fascar/Documents/mono_depth/models/kofif_20k_cityscape_170k \
   --param_overrides='{
     "model": {
       "input": {
@@ -38,6 +38,6 @@ python3.7 -m depth_and_motion_learning.infer_all_func_in_one \
     "trainer": {
       "init_ckpt": "/home/fascar/Documents/mono_depth_training/models/resnet18_ckpt_from_torch/model.ckpt",
       "init_ckpt_type": "imagenet",
-      "max_steps": 125001
+      "max_steps": 250000
     }
   }'

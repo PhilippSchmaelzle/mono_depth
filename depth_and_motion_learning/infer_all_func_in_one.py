@@ -149,7 +149,7 @@ def serving_input_receiver_fn():
                                          name='input_images')
   # here you do all the operations you need on the images before they can be fed to the net (e.g., normalizing, reshaping, etc). Let's assume "images" is the resulting tensor.
 
-  receiver_tensors = {'input_data': input_images} # As I understand, this will be my access point to the graph
+  receiver_tensors = {'input_tensor': input_images} # As I understand, this will be my access point to the graph
 
   image = tf.expand_dims(input_images, axis=0)
 
@@ -165,15 +165,16 @@ def estimator_spec_fn_infer(features, labels, mode, params):
     print(features['rgb'].shape)
     depth_net_out = depth_motion_field_model.infer_depth(rgb_image=features['rgb'], params=params)
 
-    export_outputs = {
-      'exported_output': tf.estimator.export.PredictOutput(
-        {
-          'depth_prediction_output': depth_net_out
-        }
-      )
-    }
+    #export_outputs = {
+    #  'exported_output': tf.estimator.export.PredictOutput(
+    #    {
+    #      'depth_prediction_output': depth_net_out
+    #    }
+    #  )
+    #}
 
-    return(tf.estimator.EstimatorSpec(mode=mode, predictions=depth_net_out, export_outputs=export_outputs))
+    return(tf.estimator.EstimatorSpec(mode=mode, predictions=depth_net_out))
+    #return(tf.estimator.EstimatorSpec(mode=mode, predictions=depth_net_out, export_outputs=export_outputs))
 
 
 def run_local_inference(input_fn,
